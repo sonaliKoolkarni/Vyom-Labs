@@ -1,0 +1,28 @@
+Create the object called “Customer Project” and create Status field under this object with picklist data type (Values=Active, Inactive). Create the relationship between this custom object and Opportunity so that Customer Project is related list to the Opportunity. Create Active Customer project field on Opportunity object (Data Type=Checkbox) The logic is when we create Customer Project for an Opportunity with the Status=Active, then Active Customer project check box on the Opportunity Detail page is automatically checked
+
+trigger TriggerAssignment6 on Customer_Project__c (before insert) 
+{
+     Set <Customer_Project__c> cplist = new Set <Customer_Project__c>();
+   	 Set<Id> oppidset = new Set<Id>();
+   	 List <Opportunity> opplist = new List <Opportunity>();
+   
+   	 for(Customer_Project__c cp : Trigger.new)
+     {    
+           if(cp.Status__c == 'Active')
+           {                      
+               cplist.add(cp);   
+               oppidset.add(cp.Opportunity__c);
+           } 
+    }
+   
+   if(oppidset <> null)
+   {
+        opplist = [select name,id,Active_Customer_project__c from Opportunity where ID in :oppidset];    
+        for(Opportunity o :opplist)
+        {
+        o.Active_Customer_project__c=true;
+      	} 
+       update opplist;
+    }
+
+}
