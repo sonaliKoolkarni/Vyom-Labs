@@ -1,0 +1,40 @@
+1. Create “Top X Designation” custom object which is the related list to Opportunity (Look up Relationship). In the Top X Designation object, create the fields Type (Picklist),Document Attached (Checkbox) Create one field Handoff Attached with pick list type with values are Yes, No on Opportunity Object. Logic :- If Type (Top X Designation) = "Contract Flow Down/Handoff", and "Document Attached” = True then "Handoff Attached" = True, otherwise false.
+
+Solution:
+trigger TriggerAssignment1 on Top_X_Designation__c (after insert, after update, after delete) 
+{
+    set<id> Oppset = new set<id>();
+    set<id> noSet = new set<id>();
+    List<Opportunity> opplist = new List<Opportunity>();
+    List<Opportunity> nolist = new List<Opportunity>();
+    
+    if(trigger.isInsert || trigger.isUpdate)
+    {
+    for(Top_X_Designation__c top: trigger.new)
+    { 
+        noSet.add(top.Opportunity__c);
+        if(top.Document_Attached__c == True && top.Type__c == 'Contract Flow Down/Handoff' )
+        {
+            Oppset.add(top.Opportunity__c);
+        }
+    }
+    }
+        opplist = [SELECT Id, Handoff_Attached__c from Opportunity where id in:Oppset]; 
+        nolist = [SELECT Id, Handoff_Attached__c from Opportunity where id in:noSet];
+     if(opplist.size() > 0 && opplist != null)
+     {
+        for (Opportunity Opp :opplist)
+    	{    
+        		opp.Handoff_Attached__c='Yes';       
+   	    } 
+         update opplist;
+     }
+    else
+    {
+        for (Opportunity Opp :nolist)
+    	{    
+            opp.Handoff_Attached__c='No'; 
+        }
+        update nolist;
+    }     
+}
