@@ -1,0 +1,23 @@
+Write a trigger that adds the Opportunity Owner into the sales team automatically whenever the Opportunity is created
+
+trigger TriggerAssignment3 on Opportunity (after insert) 
+{
+    List<Opportunity> opps=new List<Opportunity>();
+	OpportunityTeamMember otm=new OpportunityTeamMember();
+	List<OpportunityTeamMember> oppTeamMember =new List<OpportunityTeamMember>();
+
+	opps=[SELECT Id,OwnerId FROM Opportunity WHERE id IN:Trigger.New];
+
+	for(Opportunity ops:Trigger.New)
+	{
+       		 otm.OpportunityId=ops.Id;
+        		otm.UserId=ops.OwnerId;
+        		otm.TeamMemberRole='Sales Manager';
+        		oppTeamMember.add(otm);
+	}
+
+	if(oppTeamMember.size()>0)
+	{
+		insert oppTeamMember;
+	}
+}
